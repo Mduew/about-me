@@ -9,24 +9,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ============================================================
+           MONOCHROME THEME
+           ============================================================ */
         :root {
             --bg: #000000;
-            --surface: #0a0a0f;
-            --surface2: #111118;
-            --border: rgba(255,255,255,0.08);
-            --border2: rgba(255,255,255,0.15);
+            --surface: rgba(10,10,10,0.72);
+            --surface-solid: #0b0b0b;
+            --border: rgba(255,255,255,0.10);
+            --border2: rgba(255,255,255,0.28);
             --text: #ffffff;
-            --text2: #888899;
-            --text3: #555566;
-            --accent: #4f8ef7;
-            --accent2: #7c6af7;
-            --accent3: #f7c86a;
-            --green: #3dd68c;
+            --text2: #a6a6a6;
+            --text3: #5c5c5c;
+            --accent: #ffffff;
             --radius: 16px;
             --radius2: 24px;
             --max-w: 1100px;
         }
+
         html { scroll-behavior: smooth; }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
@@ -35,22 +38,46 @@
             overflow: hidden;
             height: 100vh;
             width: 100vw;
+            -webkit-font-smoothing: antialiased;
         }
-        /* Navigation */
+
+        /* Film grain + vignette — the "not boring" part.
+           Vignette sits BELOW the project modal so the colour reveal
+           isn't dimmed at the edges. Grain stays on top of everything. */
+        body::before {
+            content: "";
+            position: fixed; inset: 0; z-index: 800; pointer-events: none;
+            background: radial-gradient(ellipse at 50% 40%, transparent 42%, rgba(0,0,0,.6) 100%);
+        }
+        body::after {
+            content: "";
+            position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+            opacity: .045;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+        }
+
+        /* ============================================================
+           NAVIGATION
+           ============================================================ */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 200;
             padding: 0 2rem; height: 72px;
             display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.86);
             backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-bottom: 1px solid var(--border);
         }
         .nav-logo {
-            font-size: 1.15rem; font-weight: 700; letter-spacing: -0.5px;
-            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 1.15rem; font-weight: 800; letter-spacing: -0.6px;
+            display: flex; align-items: center; gap: 0.55rem;
         }
-        .nav-logo .dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .nav-logo .dot {
+            width: 8px; height: 8px; background: #fff; border-radius: 50%;
+            animation: pulse 2s infinite; box-shadow: 0 0 12px rgba(255,255,255,.8);
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
         .nav-links { display: flex; gap: 0.25rem; list-style: none; flex-wrap: wrap; }
         .nav-links a {
             color: var(--text2); text-decoration: none;
@@ -58,338 +85,631 @@
             padding: 0.4rem 0.7rem; border-radius: 30px;
             transition: all 0.2s; cursor: pointer;
         }
-        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+        .nav-links a:hover { color: #000; background: #fff; }
+
         .nav-cta {
-            background: var(--text); color: var(--bg);
+            background: #fff; color: #000;
             padding: 0.5rem 1.2rem; border-radius: 30px;
-            font-size: 0.85rem; font-weight: 600;
+            font-size: 0.85rem; font-weight: 700;
             text-decoration: none; transition: all 0.2s; white-space: nowrap;
         }
-        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,255,255,0.25); }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255,255,255,0.3); }
 
-        /* Slideshow */
+        /* ============================================================
+           SLIDESHOW
+           ============================================================ */
         .slideshow {
             position: fixed; top: 72px; left: 0; right: 0; bottom: 0;
             overflow: hidden; z-index: 10;
         }
+
         .slide {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: absolute; inset: 0;
+            opacity: 0;
+            transition: opacity 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             overflow-y: auto; overflow-x: hidden;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+            background-color: #050505;
+            background-image:
+                linear-gradient(to bottom, rgba(0,0,0,.90) 0%, rgba(0,0,0,.68) 45%, rgba(0,0,0,.95) 100%),
+                linear-gradient(rgba(128,128,128,1), rgba(128,128,128,1)),
+                var(--bg-img, none);
+            background-size: cover, cover, cover;
+            background-position: center, center, center;
+            background-repeat: no-repeat, no-repeat, no-repeat;
+            background-blend-mode: normal, saturation, normal;
         }
         .slide.active { opacity: 1; z-index: 2; pointer-events: auto; }
         .slide:not(.active) { pointer-events: none; }
-        .slide-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(0,0,0,0.88) 0%, rgba(5,5,15,0.78) 50%, rgba(0,0,0,0.88) 100%);
-            z-index: 1; pointer-events: none;
-        }
+
         .slide-content {
             position: relative; z-index: 2;
-            padding: 2rem; padding-bottom: 6rem;
+            padding: 2.5rem 2rem 6rem;
             min-height: 100%;
         }
         .slide-inner { max-width: var(--max-w); margin: 0 auto; width: 100%; }
         .slide::-webkit-scrollbar { width: 6px; }
         .slide::-webkit-scrollbar-track { background: transparent; }
-        .slide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        .slide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
 
-        /* Navigation arrows */
+        /* ============================================================
+           ARROWS / DOTS / COUNTER
+           ============================================================ */
         .nav-arrow {
             position: fixed; top: 50%; transform: translateY(-50%);
-            z-index: 100; background: rgba(15, 15, 25, 0.7);
+            z-index: 100; background: rgba(0,0,0,0.55);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            color: white; border: 1.5px solid rgba(255,255,255,0.25);
+            color: #fff; border: 1.5px solid rgba(255,255,255,0.28);
             width: 3.2rem; height: 3.2rem; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; cursor: pointer; transition: all 0.3s;
+            font-size: 1.15rem; cursor: pointer; transition: all 0.3s;
             box-shadow: 0 8px 30px rgba(0,0,0,0.6);
         }
-        .nav-arrow:hover { background: rgba(40, 40, 60, 0.85); border-color: rgba(255,255,255,0.5); transform: translateY(-50%) scale(1.1); }
+        .nav-arrow:hover {
+            background: #fff; color: #000; border-color: #fff;
+            transform: translateY(-50%) scale(1.1);
+        }
         .prev { left: 20px; }
         .next { right: 20px; }
 
-        /* Dots */
         .dots-container {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             display: flex; gap: 12px; z-index: 100;
-            background: rgba(0,0,0,0.55); backdrop-filter: blur(16px);
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
             padding: 0.7rem 1.8rem; border-radius: 4rem;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.22);
         }
         .dot {
-            width: 11px; height: 11px; background: rgba(255,255,255,0.4);
+            width: 10px; height: 10px; background: rgba(255,255,255,0.3);
             border-radius: 50%; cursor: pointer; transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.35);
         }
-        .dot.active-dot { background: #ffffff; transform: scale(1.5); box-shadow: 0 0 16px rgba(255,255,255,0.8); border-color: white; }
-        .dot:hover { background: rgba(255,255,255,0.75); }
+        .dot.active-dot {
+            background: #fff; transform: scale(1.5);
+            box-shadow: 0 0 16px rgba(255,255,255,0.9); border-color: #fff;
+        }
+        .dot:hover { background: rgba(255,255,255,0.8); }
 
-        /* Slide counter */
         .slide-counter {
-            position: fixed; top: 80px; right: 15px; z-index: 99;
-            font-size: 0.72rem; color: rgba(255,255,255,0.6);
-            font-weight: 500; letter-spacing: 0.5px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
-            padding: 0.3rem 0.8rem; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.15);
+            position: fixed; top: 84px; right: 15px; z-index: 99;
+            font-size: 0.72rem; color: rgba(255,255,255,0.75);
+            font-weight: 600; letter-spacing: 1px;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+            padding: 0.3rem 0.85rem; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.18);
         }
 
-        /* Keyboard hint */
         .keyboard-hint {
             position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
-            z-index: 99; font-size: 0.7rem; color: rgba(255,255,255,0.5);
-            background: rgba(0,0,0,0.35); backdrop-filter: blur(8px);
+            z-index: 99; font-size: 0.7rem; color: rgba(255,255,255,0.55);
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
             padding: 0.3rem 1rem; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.12);
             pointer-events: none;
         }
         .keyboard-hint kbd {
-            background: rgba(255,255,255,0.12); padding: 0.1rem 0.5rem;
+            background: rgba(255,255,255,0.14); padding: 0.1rem 0.5rem;
             border-radius: 4px; font-size: 0.65rem; margin: 0 0.15rem;
         }
 
-        /* Hero content */
+        /* ============================================================
+           HERO
+           ============================================================ */
         .hero-badge {
             display: inline-flex; align-items: center; gap: 0.5rem;
-            background: rgba(79,142,247,0.15); border: 1px solid rgba(79,142,247,0.35);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.3);
             padding: 0.4rem 1rem; border-radius: 30px;
-            font-size: 0.8rem; color: var(--accent); font-weight: 500;
-            margin-bottom: 1.5rem;
+            font-size: 0.78rem; color: #fff; font-weight: 600;
+            letter-spacing: 0.3px; margin-bottom: 1.6rem;
+            filter: grayscale(1);
         }
-        .hero-badge .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+        .hero-badge .status-dot {
+            width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
         h1 {
-            font-size: clamp(2.2rem, 5.5vw, 4.5rem);
-            font-weight: 900; letter-spacing: -2.5px; line-height: 1.05;
-            margin-bottom: 1rem;
+            font-size: clamp(2.2rem, 5.5vw, 4.6rem);
+            font-weight: 900; letter-spacing: -3px; line-height: 1.02;
+            margin-bottom: 1.2rem;
         }
         .name-highlight {
-            background: linear-gradient(135deg, #ffffff 30%, #c0c0d0);
+            background: linear-gradient(135deg, #ffffff 25%, #9a9a9a 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .name-accent {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(255,255,255,0.9);
         }
+
         .hero-sub {
             font-size: clamp(1rem, 2vw, 1.3rem);
             color: var(--text2); font-weight: 300;
-            margin-bottom: 0.8rem; line-height: 1.4;
+            margin-bottom: 1.8rem; line-height: 1.4;
+            letter-spacing: 0.2px;
         }
         .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
         .btn-main {
-            background: var(--text); color: var(--bg);
+            background: #fff; color: #000;
             padding: 0.8rem 1.8rem; border-radius: 40px;
-            font-weight: 600; font-size: 0.9rem;
+            font-weight: 700; font-size: 0.9rem;
             text-decoration: none; border: none; cursor: pointer;
             display: inline-flex; align-items: center; gap: 0.5rem;
-            transition: all 0.25s;
+            transition: all 0.25s; filter: grayscale(1);
         }
-        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,255,255,0.25); }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255,255,255,0.28); }
         .btn-ghost {
             border: 1.5px solid var(--border2); color: var(--text);
             padding: 0.8rem 1.8rem; border-radius: 40px;
-            font-weight: 500; font-size: 0.9rem;
+            font-weight: 600; font-size: 0.9rem;
             text-decoration: none;
             display: inline-flex; align-items: center; gap: 0.5rem;
-            transition: all 0.25s; background: transparent;
+            transition: all 0.25s; background: transparent; filter: grayscale(1);
         }
-        .btn-ghost:hover { border-color: var(--text); background: rgba(255,255,255,0.06); }
+        .btn-ghost:hover { border-color: #fff; background: rgba(255,255,255,0.08); transform: translateY(-3px); }
+
         .hero-stats {
-            display: flex; gap: 2.5rem; margin-top: 3rem;
+            display: flex; gap: 2rem; margin-top: 3rem;
             padding-top: 2.5rem; border-top: 1px solid var(--border);
             flex-wrap: wrap;
         }
+        .hero-stats .stat { padding-left: 2rem; border-left: 1px solid var(--border); }
+        .hero-stats .stat:first-child { padding-left: 0; border-left: none; }
         .stat-number {
-            font-size: 1.6rem; font-weight: 800; letter-spacing: -1px;
-            background: linear-gradient(135deg, var(--text), var(--text2));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.7rem; font-weight: 900; letter-spacing: -1.2px;
+            color: #fff;
         }
-        .stat-label { font-size: 0.75rem; color: var(--text3); margin-top: 0.2rem; }
+        .stat-label { font-size: 0.72rem; color: var(--text3); margin-top: 0.2rem; letter-spacing: 0.5px; }
 
-        /* Section styling */
+        /* ============================================================
+           SECTION HEADINGS
+           ============================================================ */
         .section-label {
-            font-size: 0.75rem; font-weight: 600; letter-spacing: 2.5px;
-            text-transform: uppercase; color: var(--accent);
-            margin-bottom: 0.6rem;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; color: #fff;
+            margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.7rem;
+        }
+        .section-label::before {
+            content: ""; width: 26px; height: 1px; background: #fff; display: inline-block;
         }
         .section-title {
-            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-            font-weight: 800; letter-spacing: -1.5px;
-            margin-bottom: 2.5rem; line-height: 1.15;
+            font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+            font-weight: 900; letter-spacing: -1.6px;
+            margin-bottom: 2.5rem; line-height: 1.12;
         }
 
-        /* Story */
+        /* ============================================================
+           STORY
+           ============================================================ */
         .story-quote {
-            font-size: clamp(1rem, 2vw, 1.25rem);
-            font-weight: 400; line-height: 1.8;
-            color: #d0d0e0;
-            border-left: 3px solid var(--accent);
-            padding-left: 1.8rem;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            font-weight: 400; line-height: 1.85;
+            color: #dedede;
+            border-left: 3px solid #fff;
             margin-bottom: 1.8rem; font-style: italic;
-            background: rgba(0,0,0,0.2);
-            padding: 1.5rem 1.8rem;
+            background: rgba(255,255,255,0.04);
+            padding: 1.6rem 1.8rem;
             border-radius: 0 var(--radius) var(--radius) 0;
         }
         .story-text { font-size: 0.95rem; line-height: 1.9; color: var(--text2); margin-bottom: 1.2rem; }
         .story-signature { margin-top: 2.5rem; display: flex; align-items: center; gap: 1rem; }
-        .story-signature .line { height: 1px; width: 50px; background: linear-gradient(90deg, var(--accent), transparent); }
-        .story-signature .name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
-        .story-signature .tagline { font-size: 0.8rem; color: var(--text3); }
+        .story-signature .line { height: 1px; width: 50px; background: linear-gradient(90deg, #fff, transparent); }
+        .story-signature .name { font-size: 0.9rem; font-weight: 700; color: #fff; }
+        .story-signature .tagline { font-size: 0.78rem; color: var(--text3); }
 
-        /* About */
+        /* ============================================================
+           ABOUT
+           ============================================================ */
         .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-        .about-text p { color: var(--text2); font-size: 0.95rem; line-height: 1.8; margin-bottom: 1.2rem; }
+        .about-text p { color: var(--text2); font-size: 0.95rem; line-height: 1.85; margin-bottom: 1.2rem; }
         .highlight-box {
-            background: rgba(10,10,20,0.7);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(12px);
             border: 1px solid var(--border2);
             border-radius: var(--radius2); padding: 2rem;
         }
-        .highlight-box h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
-        .highlight-list { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
-        .highlight-list li { display: flex; align-items: flex-start; gap: 0.7rem; font-size: 0.85rem; color: var(--text2); }
+        .highlight-box h3 { font-size: 1rem; font-weight: 800; margin-bottom: 1.1rem; letter-spacing: -0.3px; }
+        .highlight-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+        .highlight-list li { display: flex; align-items: flex-start; gap: 0.7rem; font-size: 0.84rem; color: var(--text2); line-height: 1.55; }
         .highlight-list li .check {
             width: 18px; height: 18px; min-width: 18px;
-            background: rgba(61,214,140,0.15); border: 1px solid rgba(61,214,140,0.35);
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 0.55rem; color: var(--green); margin-top: 2px;
+            font-size: 0.55rem; color: #fff; margin-top: 2px;
         }
 
-        /* Experience */
+        /* ============================================================
+           EXPERIENCE
+           ============================================================ */
         .exp-card {
-            background: rgba(10,10,20,0.7);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(12px);
             border: 1px solid var(--border);
             border-radius: var(--radius2); padding: 1.8rem;
-            border-left: 4px solid var(--accent);
+            border-left: 3px solid #fff;
             margin-bottom: 1.2rem;
+            transition: all 0.3s;
         }
+        .exp-card:hover { background: rgba(255,255,255,0.06); border-color: var(--border2); border-left-color: #fff; }
         .exp-card:last-child { margin-bottom: 0; }
         .exp-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .exp-role { font-size: 1.15rem; font-weight: 700; }
-        .exp-company { color: var(--text3); font-size: 0.85rem; margin-bottom: 0.3rem; }
-        .exp-period { font-size: 0.75rem; color: var(--accent); background: rgba(79,142,247,0.12); padding: 0.25rem 0.7rem; border-radius: 20px; font-weight: 500; white-space: nowrap; }
-        .exp-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1.2rem; }
-        .exp-highlight { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
-        .exp-highlight .arrow { color: var(--accent); font-size: 0.65rem; margin-top: 3px; }
-        .exp-highlight .metric { color: var(--text); font-weight: 600; }
+        .exp-role { font-size: 1.12rem; font-weight: 800; letter-spacing: -0.3px; }
+        .exp-company { color: var(--text3); font-size: 0.84rem; margin-bottom: 0.3rem; }
+        .exp-period {
+            font-size: 0.72rem; color: #fff;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.22);
+            padding: 0.25rem 0.75rem; border-radius: 20px;
+            font-weight: 600; white-space: nowrap; letter-spacing: 0.3px;
+        }
+        .exp-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-top: 1.2rem; }
+        .exp-highlight { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.81rem; color: var(--text2); line-height: 1.5; }
+        .exp-highlight .arrow { color: #fff; font-size: 0.7rem; margin-top: 3px; }
+        .exp-highlight .metric { color: #fff; font-weight: 700; }
 
-        /* Skills */
+        /* ============================================================
+           SKILLS
+           ============================================================ */
         .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
         .skill-card {
-            background: rgba(10,10,20,0.65);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1.5rem;
             transition: all 0.3s;
         }
-        .skill-card:hover { border-color: var(--border2); transform: translateY(-4px); background: rgba(15,15,30,0.8); }
-        .skill-card .skill-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
-        .skill-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .skill-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
-        .skill-card li { font-size: 0.75rem; color: var(--text2); padding-left: 0.9rem; position: relative; }
-        .skill-card li::before { content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+        .skill-card:hover {
+            border-color: #fff; transform: translateY(-5px);
+            background: rgba(255,255,255,0.07);
+            box-shadow: 0 18px 40px -20px rgba(0,0,0,.9);
+        }
+        .skill-card .skill-icon { font-size: 1.6rem; margin-bottom: 0.6rem; display: block; filter: grayscale(1); }
+        .skill-card h3 { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.55rem; letter-spacing: -0.2px; }
+        .skill-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+        .skill-card li { font-size: 0.74rem; color: var(--text2); padding-left: 0.9rem; position: relative; }
+        .skill-card li::before { content: '·'; position: absolute; left: 0; color: #fff; font-weight: bold; }
 
-        /* Projects */
-        .projects-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        /* ============================================================
+           PROJECTS — hover peek, click for colour
+           ============================================================ */
+        .projects-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.8rem; flex-wrap: wrap; }
         .tab-btn {
             padding: 0.5rem 1.2rem; border-radius: 30px;
-            background: rgba(10,10,20,0.6); border: 1px solid var(--border);
-            color: var(--text2); font-size: 0.8rem; font-weight: 500;
-            cursor: pointer; transition: all 0.2s;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            color: var(--text2); font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; letter-spacing: 0.4px;
+            filter: grayscale(1);
         }
-        .tab-btn.active, .tab-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
-        .project-card {
-            background: rgba(10,10,20,0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius); overflow: hidden;
-            transition: all 0.35s;
-        }
-        .project-card:hover { border-color: var(--border2); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .project-image {
-            height: 110px; background: linear-gradient(135deg, #111118, #1a1a28);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.8rem; border-bottom: 1px solid var(--border);
-        }
-        .project-body { padding: 1.3rem; }
-        .project-badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-bottom: 0.6rem; }
-        .badge-pro { background: rgba(79,142,247,0.15); color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
-        .badge-personal { background: rgba(124,106,247,0.15); color: var(--accent2); border: 1px solid rgba(124,106,247,0.3); }
-        .project-body h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
-        .project-body p { font-size: 0.78rem; color: var(--text2); margin-bottom: 0.9rem; line-height: 1.5; }
-        .tech-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-        .tech-tag { background: rgba(255,255,255,0.06); border: 1px solid var(--border); padding: 0.2rem 0.55rem; border-radius: 20px; font-size: 0.68rem; color: var(--text2); }
+        .tab-btn.active, .tab-btn:hover { background: #fff; color: #000; border-color: #fff; }
 
-        /* Certs */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .project-card {
+            position: relative;
+            display: block; width: 100%;
+            aspect-ratio: 4 / 3;
+            padding: 0; margin: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: #0c0c0c;
+            color: inherit; font: inherit; text-align: left;
+            cursor: pointer;
+            transition: transform .35s cubic-bezier(.2,.8,.2,1),
+                        border-color .35s ease,
+                        box-shadow .35s ease;
+            animation: cardRise .5s cubic-bezier(.2,.8,.2,1) backwards;
+        }
+        @keyframes cardRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .project-card:hover,
+        .project-card:focus-visible {
+            transform: translateY(-6px);
+            border-color: var(--border2);
+            box-shadow: 0 24px 48px -20px rgba(0,0,0,.95),
+                        0 0 0 1px rgba(255,255,255,.07);
+            outline: none;
+        }
+        .project-card:focus-visible { box-shadow: 0 0 0 2px #fff, 0 24px 48px -20px rgba(0,0,0,.95); }
+
+        .project-media { position: absolute; inset: 0; }
+        .project-media img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            filter: grayscale(1) contrast(1.05) brightness(.9);
+            transition: transform .6s cubic-bezier(.2,.8,.2,1), filter .4s ease;
+        }
+        .project-card:hover .project-media img,
+        .project-card:focus-visible .project-media img {
+            transform: scale(1.07);
+            filter: grayscale(1) brightness(.55) contrast(1.1);
+        }
+
+        .project-shade {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top,
+                        rgba(0,0,0,.96) 0%,
+                        rgba(0,0,0,.62) 36%,
+                        rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+
+        .project-meta {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            padding: 1.1rem 1.2rem;
+            pointer-events: none;
+        }
+        .project-badge {
+            display: inline-block;
+            font-size: 0.6rem; font-weight: 800; letter-spacing: 1.6px;
+            text-transform: uppercase;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,.35);
+            background: rgba(0,0,0,.35);
+            padding: 0.18rem 0.55rem; border-radius: 20px;
+            margin-bottom: 0.5rem;
+        }
+        .project-meta h3 {
+            font-size: 1rem; font-weight: 800; letter-spacing: -0.3px;
+            line-height: 1.25; margin: 0;
+            text-shadow: 0 1px 12px rgba(0,0,0,.7);
+        }
+
+        .teaser-wrap {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            margin-top: 0;
+            transition: grid-template-rows .4s cubic-bezier(.2,.8,.2,1),
+                        opacity .28s ease,
+                        margin-top .4s cubic-bezier(.2,.8,.2,1);
+        }
+        .teaser-wrap > div { overflow: hidden; }
+        .teaser {
+            font-size: 0.79rem; line-height: 1.55; color: #cfcfcf;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .hint {
+            display: inline-block; margin-top: 9px;
+            font-size: 0.66rem; font-weight: 800; letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff; border-bottom: 1px solid rgba(255,255,255,.5);
+            padding-bottom: 1px;
+        }
+        @media (hover: hover) {
+            .project-card:hover .teaser-wrap {
+                grid-template-rows: 1fr; opacity: 1; margin-top: 8px;
+            }
+        }
+        .project-card:focus-visible .teaser-wrap {
+            grid-template-rows: 1fr; opacity: 1; margin-top: 8px;
+        }
+
+        .empty-note {
+            grid-column: 1 / -1;
+            color: var(--text3); font-size: 0.85rem;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem; text-align: center;
+        }
+
+        /* ============================================================
+           PROJECT MODAL — the colour reveal
+           z-index 10000 keeps it above the vignette (z-index 800)
+           so the colour pops cleanly. Grain (9999) still sits on top.
+           ============================================================ */
+        .pm {
+            position: fixed; inset: 0; z-index: 10000;
+            display: grid; place-items: center;
+            padding: 24px;
+            opacity: 0; visibility: hidden;
+            transition: opacity .3s ease, visibility .3s ease;
+        }
+        .pm.open { opacity: 1; visibility: visible; }
+
+        .pm-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .pm-panel {
+            position: relative;
+            display: flex; flex-direction: column;
+            width: min(700px, 100%);
+            max-height: 88vh;
+            background: #0b0b0b;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 50px 120px -30px #000,
+                        0 0 90px -25px rgba(255,60,140,.20),
+                        0 0 90px -30px rgba(0,170,255,.20);
+            transform: translateY(18px) scale(.98);
+            transition: transform .38s cubic-bezier(.2,.8,.2,1);
+        }
+        .pm.open .pm-panel { transform: none; }
+
+        .pm-hero { position: relative; flex: 0 0 auto; height: 250px; background: #000; }
+        .pm-hero img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            animation: colourIn .6s ease both;
+        }
+        @keyframes colourIn {
+            from { filter: grayscale(1) brightness(.45); }
+            to   { filter: grayscale(0) brightness(1); }
+        }
+        .pm-hero::after {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(to top, #0b0b0b, rgba(11,11,11,0) 55%);
+        }
+
+        .pm-colour-badge {
+            position: absolute; left: 14px; bottom: 14px; z-index: 2;
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 6px 12px; border-radius: 999px;
+            font-size: 0.62rem; font-weight: 800; letter-spacing: 1.4px;
+            text-transform: uppercase; color: #fff;
+            background: rgba(0,0,0,.6);
+            border: 1px solid rgba(255,255,255,.3);
+            backdrop-filter: blur(8px);
+        }
+        .pm-colour-badge::before {
+            content: ""; width: 10px; height: 10px; border-radius: 50%;
+            background: conic-gradient(#ff004c, #ffb300, #2bd45b, #00a0ff, #b000ff, #ff004c);
+            box-shadow: 0 0 10px rgba(255,255,255,.45);
+        }
+
+        .pm-close {
+            position: absolute; top: 14px; right: 14px; z-index: 3;
+            width: 38px; height: 38px;
+            display: grid; place-items: center;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.22);
+            background: rgba(0,0,0,.7);
+            backdrop-filter: blur(8px);
+            color: #fff; font-size: 20px; line-height: 1;
+            cursor: pointer; transition: background .2s, transform .25s;
+        }
+        .pm-close:hover { background: #fff; color: #000; transform: rotate(90deg); }
+
+        .pm-body {
+            flex: 1 1 auto; min-height: 0;
+            overflow-y: auto;
+            padding: 4px 26px 28px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .pm-body::-webkit-scrollbar { width: 10px; }
+        .pm-body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.16); border-radius: 999px;
+            border: 3px solid #0b0b0b;
+        }
+        .pm-type {
+            display: inline-block;
+            font-size: 0.6rem; font-weight: 800; letter-spacing: 1.6px;
+            text-transform: uppercase; color: var(--text2);
+            margin-bottom: 0.7rem;
+        }
+        .pm-body h2 {
+            font-size: 1.5rem; font-weight: 900; letter-spacing: -1px;
+            margin-bottom: 0.9rem; line-height: 1.15;
+        }
+        .pm-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+        .pm-body p { color: var(--text2); font-size: 0.92rem; line-height: 1.8; }
+
+        .tech-tag {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 0.22rem 0.6rem; border-radius: 20px;
+            font-size: 0.66rem; color: #d0d0d0; font-weight: 600;
+        }
+
+        /* ============================================================
+           CERTIFICATIONS
+           ============================================================ */
         .certs-scroll { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
         .cert-card {
-            background: rgba(10,10,20,0.65);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1.4rem;
             display: flex; align-items: flex-start; gap: 1rem;
             transition: all 0.3s;
         }
-        .cert-card:hover { border-color: var(--border2); transform: translateY(-4px); }
-        .cert-card .cert-icon { font-size: 2rem; min-width: 48px; text-align: center; }
-        .cert-info { font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
-        .cert-info .cert-sub { display: block; font-size: 0.72rem; color: var(--text3); font-weight: 400; margin-top: 0.2rem; }
-        .cert-info .pending { color: var(--accent3); font-size: 0.72rem; font-weight: 500; }
+        .cert-card:hover { border-color: #fff; transform: translateY(-4px); background: rgba(255,255,255,0.07); }
+        .cert-card .cert-icon { font-size: 1.9rem; min-width: 44px; text-align: center; filter: grayscale(1); }
+        .cert-info { font-size: 0.86rem; font-weight: 700; line-height: 1.4; }
+        .cert-info .cert-sub { display: block; font-size: 0.7rem; color: var(--text3); font-weight: 400; margin-top: 0.25rem; }
+        .cert-info .pending { color: #fff; font-size: 0.7rem; font-weight: 600; }
 
-        /* Contact */
+        /* ============================================================
+           CONTACT
+           ============================================================ */
         .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
-        .contact-cta { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -1px; line-height: 1.2; margin-bottom: 1rem; }
-        .contact-sub { color: var(--text2); margin-bottom: 2rem; }
+        .contact-cta {
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 900; letter-spacing: -1.4px;
+            line-height: 1.15; margin-bottom: 1rem;
+        }
+        .contact-sub { color: var(--text2); margin-bottom: 2rem; font-size: 0.93rem; }
         .contact-links { display: flex; flex-direction: column; gap: 0.8rem; }
         .contact-link {
             display: flex; align-items: center; gap: 0.8rem;
-            background: rgba(10,10,20,0.7); border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
             border-radius: var(--radius); padding: 1rem 1.3rem;
-            text-decoration: none; color: var(--text); font-size: 0.88rem; font-weight: 500;
+            text-decoration: none; color: var(--text);
+            font-size: 0.86rem; font-weight: 600;
             transition: all 0.25s; backdrop-filter: blur(8px);
+            filter: grayscale(1);
         }
-        .contact-link:hover { border-color: var(--border2); transform: translateX(6px); }
-        .contact-link .link-icon { font-size: 1.3rem; }
+        .contact-link:hover { border-color: #fff; background: rgba(255,255,255,0.09); transform: translateX(6px); }
+        .contact-link .link-icon { font-size: 1.2rem; }
         .contact-link .link-arrow { margin-left: auto; color: var(--text3); font-size: 0.8rem; }
+        .contact-link:hover .link-arrow { color: #fff; }
+
         .contact-card {
-            background: rgba(10,10,20,0.7); backdrop-filter: blur(12px);
-            border: 1px solid var(--border); border-radius: var(--radius);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             padding: 1.5rem; margin-bottom: 1rem;
         }
         .contact-card:last-child { margin-bottom: 0; }
-        .contact-card h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 0.8rem; }
-        .contact-card .info-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; margin-bottom: 0.6rem; }
+        .contact-card h4 {
+            font-size: 0.66rem; text-transform: uppercase; letter-spacing: 2.4px;
+            color: var(--text3); margin-bottom: 0.9rem; font-weight: 800;
+        }
+        .contact-card .info-row {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.83rem; margin-bottom: 0.6rem; filter: grayscale(1);
+        }
         .contact-card .info-row:last-child { margin-bottom: 0; }
         .avail-badge {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            background: rgba(61,214,140,0.1); border: 1px solid rgba(61,214,140,0.3);
-            padding: 0.3rem 0.8rem; border-radius: 20px;
-            font-size: 0.75rem; color: var(--green); font-weight: 600;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.35);
+            padding: 0.35rem 0.9rem; border-radius: 20px;
+            font-size: 0.73rem; color: #fff; font-weight: 700;
+            letter-spacing: 0.4px;
         }
+        .avail-badge span { animation: pulse 2s infinite; }
 
-        /* Mobile */
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
         @media (max-width: 768px) {
             .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
             .exp-highlights { grid-template-columns: 1fr; }
-            .slide-content { padding: 1.2rem; padding-bottom: 5rem; }
+            .slide-content { padding: 1.6rem 1.2rem 5.5rem; }
             .nav-links { display: none; }
             .nav-arrow { width: 2.6rem; height: 2.6rem; font-size: 1rem; }
             .prev { left: 8px; } .next { right: 8px; }
-            .hero-stats { gap: 1.5rem; }
+            .hero-stats { gap: 1.2rem; }
+            .hero-stats .stat { padding-left: 1.2rem; }
             .dots-container { padding: 0.5rem 1.2rem; gap: 8px; bottom: 20px; }
             .dot { width: 9px; height: 9px; }
-            .slide-counter { top: 80px; right: 10px; font-size: 0.7rem; }
-            .keyboard-hint { bottom: 70px; }
+            .slide-counter { top: 82px; right: 10px; font-size: 0.68rem; }
+            .keyboard-hint { display: none; }
+            .name-accent { -webkit-text-stroke-width: 1.4px; }
+            .projects-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+            .pm-hero { height: 190px; }
+            .pm-body { padding: 4px 20px 24px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .001ms !important;
+                transition-duration: .001ms !important;
+            }
         }
     </style>
 </head>
@@ -411,9 +731,8 @@
 
     <div class="slideshow" id="slideshow">
 
-        <!-- Slide 0: Hero — custom generated image -->
-        <div class="slide active" id="slide0" style="background-image: url('Images/slide_hero.jpg');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 0: Hero -->
+        <div class="slide active" id="slide0" style="--bg-img:url('Images/slide_hero.jpg');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="hero-badge"><span class="status-dot"></span>Available for new opportunities</div>
@@ -421,14 +740,14 @@
                         <span class="name-highlight">Mzamo Mduduzi</span><br>
                         <span class="name-accent">Comfort Sithole</span>
                     </h1>
-                    <p class="hero-sub">IT Operations Specialist → Network Engineer(in training)</p>
+                    <p class="hero-sub">Service Desk Agent | IT Support & Infrastructure</p>
                     <div class="hero-actions">
                         <a href="mailto:mzamo.mduduzi.comfort@gmail.com" class="btn-main">📬 Send a Message</a>
                         <a href="resume.pdf" class="btn-ghost">📄 Download Resume</a>
                     </div>
                     <div class="hero-stats">
-                        <div class="stat"><div class="stat-number">200+</div><div class="stat-label">Users Supported</div></div>
-                        <div class="stat"><div class="stat-number">1+</div><div class="stat-label">Year Corporate IT</div></div>
+                        <div class="stat"><div class="stat-number">3+</div><div class="stat-label">Years of IT Experience</div></div>
+                        <div class="stat"><div class="stat-number">2+</div><div class="stat-label">Years in Corporate IT</div></div>
                         <div class="stat"><div class="stat-number">8</div><div class="stat-label">Certifications</div></div>
                         <div class="stat"><div class="stat-number">BSc IT</div><div class="stat-label">Graduate</div></div>
                     </div>
@@ -436,52 +755,50 @@
             </div>
         </div>
 
-        <!-- Slide 1: Story — mountain journey -->
-        <div class="slide" id="slide1" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 1: Story -->
+        <div class="slide" id="slide1" style="--bg-img:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop');">
             <div class="slide-content">
                 <div class="slide-inner" style="max-width: 780px;">
                     <div class="section-label">My Journey</div>
                     <div class="section-title">The Story Behind the Work</div>
                     <blockquote class="story-quote">
-                        "I remember early last year, right after my internship ended. I was sending out CVs almost every day. Reaching out to IT companies, even asking to volunteer just to get hands-on exposure on the networking side. Rejection after rejection. Some didn't even respond. At some point, you start questioning everything. But I told myself something simple: keep pushing. What's meant for me will find me along the way. That's when I stopped waiting and started building."
+                        "My journey in IT has been built through hands-on support, continuous learning and a willingness to solve real problems. From supporting users in corporate environments to working on service desk operations, I have kept building my technical foundation and expanding my understanding of IT infrastructure."
                     </blockquote>
                     <p class="story-text">
-                        I set up my own home lab. Broke things, fixed them, learned how networks actually behave — not just in theory. No permission needed, no gatekeepers. It didn't remove the frustration, but it gave me control.
+                        Alongside my professional experience, I continue to develop my own home lab. I work with Cisco routing and switching equipment, practise network configuration, and use Python and Netmiko to explore network automation. The lab gives me a place to test, troubleshoot and turn theory into practical experience.
                     </p>
-                    <p class="story-text" style="font-weight: 600; color: #e0e0f0;">
-                        So if you're in that space where doors aren't opening — build your own. Learn anyway. Show up anyway.
+                    <p class="story-text" style="font-weight: 700; color: #ffffff;">
+                        I believe in staying curious, taking ownership of problems and continuously improving the way technology supports people and businesses.
                     </p>
                     <div class="story-signature">
                         <div class="line"></div>
-                        <div><div class="name">Mzamo Sithole</div><div class="tagline">Still pushing. Still learning.</div></div>
+                        <div><div class="name">Mzamo Sithole</div><div class="tagline">Building experience. Staying curious.</div></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Slide 2: About — circuit board -->
-        <div class="slide" id="slide2" style="background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 2: About -->
+        <div class="slide" id="slide2" style="--bg-img:url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="section-label">About Me</div>
-                    <div class="section-title">Built to support. Trained to scale.</div>
+                    <div class="section-title">Supporting users. Building infrastructure skills.</div>
                     <div class="about-grid">
                         <div class="about-text">
-                            <p>From helpdesk to enterprise IT at Sappi Southern Africa — I've spent over a year solving real problems for real people. Hardware failures, ticket overloads, M365 migrations, AD group policies — if it breaks or needs configuring, I've touched it.</p>
-                            <p>The goal isn't just fixing things though. It's understanding systems end-to-end so you can prevent them breaking in the first place. That's why I'm moving into networking — to build the kind of infrastructure that doesn't need constant firefighting.</p>
-                            <p>Based in Durban, South Africa. Fluent in English and isiZulu. Code 10 (C1) driver's license.</p>
+                            <p>I am an IT support professional with experience across corporate IT, service desk operations and freelance technical support. My background includes supporting Windows endpoints, Microsoft 365, Active Directory, hardware, printers, VoIP and business applications. I currently work as a Service Desk Agent at TradeLink, supporting retail technology and helping users resolve day-to-day operational issues.</p>
+                            <p>I enjoy understanding how systems connect, diagnosing issues methodically and communicating clearly with users. I am also developing my networking and automation skills through a practical home lab, Cisco equipment and Python-based projects.</p>
+                            <p>Based in Durban, South Africa. Fluent in English and isiZulu. Driver's licence available.</p>
                         </div>
                         <div class="highlight-box">
                             <h3>Core Strengths</h3>
                             <ul class="highlight-list">
-                                <li><span class="check">✓</span>ITIL-aligned incident & request management with SLA accountability</li>
-                                <li><span class="check">✓</span>Enterprise endpoint management via SCCM (200+ devices)</li>
-                                <li><span class="check">✓</span>Microsoft 365 administration and user support</li>
-                                <li><span class="check">✓</span>Active Directory design, GPOs, and PowerShell automation</li>
-                                <li><span class="check">✓</span>Network fundamentals — TCP/IP, DNS, DHCP, VLANs</li>
-                                <li><span class="check">✓</span>Endpoint security — BitLocker, encryption, recovery</li>
+                                <li><span class="check">✓</span>Service desk incident logging, investigation and user communication</li>
+                                <li><span class="check">✓</span>Windows desktop, laptop, printer and peripheral support</li>
+                                <li><span class="check">✓</span>Microsoft 365 and Active Directory user support</li>
+                                <li><span class="check">✓</span>Retail technology and point-of-sale troubleshooting</li>
+                                <li><span class="check">✓</span>Networking fundamentals, Cisco routing and switching practice</li>
+                                <li><span class="check">✓</span>Python and Netmiko fundamentals for network automation</li>
                             </ul>
                         </div>
                     </div>
@@ -489,18 +806,17 @@
             </div>
         </div>
 
-        <!-- Slide 3: Experience — custom generated image -->
-        <div class="slide" id="slide3" style="background-image: url('Images/slide_experience.jpg');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 3: Experience -->
+        <div class="slide" id="slide3" style="--bg-img:url('Images/slide_experience.jpg');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="section-label">Experience</div>
                     <div class="section-title">Where I've Worked</div>
 
-                    <div class="exp-card" style="border-left-color: var(--green);">
+                    <div class="exp-card">
                         <div class="exp-header">
-                            <div><div class="exp-role">Freelance IT Support Technician</div><div class="exp-company">Self-Employed | Jan 2021 – Jan 2024</div></div>
-                            <span class="exp-period">Jan 2021 – Jan 2024</span>
+                            <div><div class="exp-role">Freelance IT Support Technician</div><div class="exp-company">Self-Employed | May 2021 – Jan 2024</div></div>
+                            <span class="exp-period">May 2021 – Jan 2024</span>
                         </div>
                         <div class="exp-highlights">
                             <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Desktop support</span> for individual clients & small businesses</div>
@@ -514,7 +830,7 @@
 
                     <div class="exp-card">
                         <div class="exp-header">
-                            <div><div class="exp-role">IT Support Specialist</div><div class="exp-company">Sappi Southern Africa, Durban | Feb 2024 – Jan 2025</div></div>
+                            <div><div class="exp-role">IT Operations Intern</div><div class="exp-company">Sappi Southern Africa, Durban | Feb 2024 – Jan 2025</div></div>
                             <span class="exp-period">Feb 2024 – Jan 2025</span>
                         </div>
                         <div class="exp-highlights">
@@ -526,32 +842,60 @@
                             <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">ITIL ticketing</span> system administration & process improvement</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Slide 4: Skills — network cables -->
-        <div class="slide" id="slide4" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2070&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
-            <div class="slide-content">
-                <div class="slide-inner">
-                    <div class="section-label">Skills</div>
-                    <div class="section-title">What I Bring to the Table</div>
-                    <div class="skills-grid">
-                        <div class="skill-card"><div class="skill-icon">🖥️</div><h3>Desktop & Helpdesk</h3><ul><li>Windows 10/11 troubleshooting</li><li>Hardware diagnostics & repair</li><li>ITIL incident management</li></ul></div>
-                        <div class="skill-card"><div class="skill-icon">☁️</div><h3>Microsoft 365</h3><ul><li>Exchange Online administration</li><li>Teams & OneDrive management</li><li>SharePoint & licensing</li></ul></div>
-                        <div class="skill-card"><div class="skill-icon">🔧</div><h3>Endpoint Management</h3><ul><li>SCCM / Configuration Manager</li><li>BitLocker encryption & recovery</li><li>Patch management & compliance</li></ul></div>
-                        <div class="skill-card"><div class="skill-icon">👥</div><h3>Active Directory</h3><ul><li>User & group administration</li><li>Group Policy Objects (GPOs)</li><li>PowerShell automation scripts</li></ul></div>
-                        <div class="skill-card"><div class="skill-icon">🌐</div><h3>Networking (Growing)</h3><ul><li>TCP/IP, DNS, DHCP fundamentals</li><li>VLANs & inter-VLAN routing</li><li>Cisco Packet Tracer (CCNA prep)</li></ul></div>
-                        <div class="skill-card"><div class="skill-icon">🔒</div><h3>Security Fundamentals</h3><ul><li>Endpoint hardening</li><li>Authentication & MFA</li><li>Data loss prevention basics</li></ul></div>
+                    <div class="exp-card">
+                        <div class="exp-header">
+                            <div><div class="exp-role">IT Support Intern</div><div class="exp-company">Vumela IT Services | July 2025 – August 2026</div></div>
+                            <span class="exp-period">July 2025 – August 2026</span>
+                        </div>
+                        <div class="exp-highlights">
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">End-user support</span> for desktop and workplace technology issues</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Hardware and software</span> troubleshooting and maintenance</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Networking exposure</span> through practical support tasks</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">User assistance</span> and day-to-day IT operations</div>
+                        </div>
+                    </div>
+
+                    <div class="exp-card">
+                        <div class="exp-header">
+                            <div><div class="exp-role">Service Desk Agent</div><div class="exp-company">TradeLink | September 2026 – Present</div></div>
+                            <span class="exp-period">September 2026 – Present</span>
+                        </div>
+                        <div class="exp-highlights">
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Service desk support</span> for retail users and operational technology</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">POS troubleshooting</span> and investigation of till-related issues</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Retail systems</span> exposure, including DStore and Sigma</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Support tools</span> and monitoring exposure, including Jira and Zabbix</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Device support</span> involving retail scanners and peripherals</div>
+                            <div class="exp-highlight"><span class="arrow">→</span> <span class="metric">Incident handling</span> with clear communication and escalation</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Slide 5: Projects — code -->
-        <div class="slide" id="slide5" style="background-image: url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2069&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 4: Skills -->
+        <div class="slide" id="slide4" style="--bg-img:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2070&auto=format&fit=crop');">
+            <div class="slide-content">
+                <div class="slide-inner">
+                    <div class="section-label">Skills</div>
+                    <div class="section-title">What I Bring to the Table</div>
+                    <div class="skills-grid">
+                        <div class="skill-card"><span class="skill-icon">🖥️</span><h3>Desktop & Service Desk</h3><ul><li>Windows 10/11 troubleshooting</li><li>Hardware, printer & peripheral support</li><li>Incident logging and escalation</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">☁️</span><h3>Microsoft 365</h3><ul><li>Exchange Online administration</li><li>Teams & OneDrive management</li><li>SharePoint & licensing</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">🔧</span><h3>Endpoint Management</h3><ul><li>SCCM / Configuration Manager</li><li>BitLocker encryption & recovery</li><li>Patch management & compliance</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">👥</span><h3>Active Directory</h3><ul><li>User & group administration</li><li>Group Policy Objects (GPOs)</li><li>PowerShell automation scripts</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">🌐</span><h3>Networking</h3><ul><li>TCP/IP, DNS & DHCP fundamentals</li><li>VLANs and inter-VLAN routing practice</li><li>Cisco router and switch lab</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">🛒</span><h3>Retail Systems Support</h3><ul><li>Point-of-sale troubleshooting</li><li>Retail scanners and peripherals</li><li>Retail applications and support workflows</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">🐍</span><h3>Automation & Monitoring</h3><ul><li>Python scripting fundamentals</li><li>Netmiko and SSH automation</li><li>Network checks and monitoring concepts</li></ul></div>
+                        <div class="skill-card"><span class="skill-icon">🔒</span><h3>Security Fundamentals</h3><ul><li>Endpoint security concepts</li><li>Identity and access fundamentals</li><li>Microsoft security fundamentals</li></ul></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Projects -->
+        <div class="slide" id="slide5" style="--bg-img:url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2069&auto=format&fit=crop');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="section-label">Projects</div>
@@ -560,15 +904,15 @@
                         <button class="tab-btn active" data-tab="all" onclick="filterProjects('all', this)">All</button>
                         <button class="tab-btn" data-tab="professional" onclick="filterProjects('professional', this)">💼 Professional</button>
                         <button class="tab-btn" data-tab="personal" onclick="filterProjects('personal', this)">🚀 Personal</button>
+                        <button class="tab-btn" data-tab="academic" onclick="filterProjects('academic', this)">🎓 Academic</button>
                     </div>
                     <div class="projects-grid" id="projectsGrid"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Slide 6: Certifications — achievement -->
-        <div class="slide" id="slide6" style="background-image: url('https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?q=80&w=2070&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 6: Certifications -->
+        <div class="slide" id="slide6" style="--bg-img:url('https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?q=80&w=2070&auto=format&fit=crop');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="section-label">Certifications</div>
@@ -578,16 +922,15 @@
             </div>
         </div>
 
-        <!-- Slide 7: Contact — city skyline -->
-        <div class="slide" id="slide7" style="background-image: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2144&auto=format&fit=crop');">
-            <div class="slide-overlay"></div>
+        <!-- Slide 7: Contact -->
+        <div class="slide" id="slide7" style="--bg-img:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2144&auto=format&fit=crop');">
             <div class="slide-content">
                 <div class="slide-inner">
                     <div class="section-label">Contact</div>
                     <div class="contact-grid">
                         <div>
                             <div class="contact-cta">Let's build something together.</div>
-                            <p class="contact-sub">Open to IT support roles, junior network engineer positions, and IT collaborations. I respond within 24 hours.</p>
+                            <p class="contact-sub">Currently working in service desk support and open to relevant IT support, desktop support, infrastructure and networking opportunities, as well as technical collaborations.</p>
                             <div class="contact-links">
                                 <a href="mailto:mzamo.mduduzi.comfort@gmail.com" class="contact-link"><span class="link-icon">📧</span>mzamo.mduduzi.comfort@gmail.com<span class="link-arrow">→</span></a>
                                 <a href="tel:+27736301020" class="contact-link"><span class="link-icon">📞</span>073 630 1020<span class="link-arrow">→</span></a>
@@ -595,8 +938,8 @@
                             </div>
                         </div>
                         <div>
-                            <div class="contact-card"><h4>Quick Info</h4><div class="info-row">📋 BSc IT — Richfield</div><div class="info-row">📅 1+ year corporate experience</div><div class="info-row">🗣️ English & isiZulu</div><div class="info-row">🚗 Code 10 (C1) driver</div></div>
-                            <div class="contact-card"><h4>Current Status</h4><div class="avail-badge"><span>●</span> Actively job searching</div></div>
+                            <div class="contact-card"><h4>Quick Info</h4><div class="info-row">📋 BSc IT — Richfield</div><div class="info-row">📅 2+ years across corporate IT and service desk environments</div><div class="info-row">🗣️ English & isiZulu</div><div class="info-row">🚗 Code 10 (C1) driver</div></div>
+                            <div class="contact-card"><h4>Current Status</h4><div class="avail-badge"><span>●</span> Employed · Open to opportunities</div></div>
                         </div>
                     </div>
                 </div>
@@ -614,40 +957,125 @@
     <div class="slide-counter" id="slideCounter">1 / 8</div>
     <div class="keyboard-hint">Use <kbd>←</kbd> <kbd>→</kbd> arrows or swipe</div>
 
+    <!-- ============ PROJECT MODAL ============ -->
+    <div class="pm" id="projectModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pmTitle">
+        <div class="pm-backdrop" data-close></div>
+        <div class="pm-panel">
+            <button class="pm-close" type="button" data-close aria-label="Close">&times;</button>
+            <div class="pm-hero">
+                <img id="pmImg" src="" alt="">
+                <span class="pm-colour-badge">Full colour</span>
+            </div>
+            <div class="pm-body">
+                <span class="pm-type" id="pmType"></span>
+                <h2 id="pmTitle"></h2>
+                <div class="pm-tags" id="pmTags"></div>
+                <p id="pmDesc"></p>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Projects data
+        /* ============================================================
+           PROJECT DATA
+           ============================================================ */
         const projects = [
-            { name: "Risk Monitoring System", desc: "Scans files, keywords, and browser history for risky content Generates a risk score and detailed report Ongoing upgrade into a full desktop GUI (Tkinter) Moving toward a “TechPulse-style” monitoring dashboard with multiple pages like logs, settings, and alerts.", techs: ["GUI", "Python"], icon: "📦", type: "personal" },
-            { name: "e-Docket", desc: "E-Docket  refer to an electronic version of a traditional police docket. In modern contexts, many law enforcement agencies have transitioned to digital systems for managing and storing their records. An E-Docket would involve the use of electronic platforms or software to create, update, and store information related to police activities, replacing or complementing traditional paper-based systems..", techs: , icon: "👥", type: "Final year Project" },
-            { name: "Cisco Packet Tracer Enterprise Lab", desc: "Built a multi-branch virtual enterprise network with VLANs, OSPF routing, inter-VLAN routing, and access control lists for CCNA certification practice.", techs: ["Cisco", "VLAN", "OSPF", "Packet Tracer"], icon: "🌐", type: "personal" },
-            { name: "Python Network Automation Scripts", desc: "Wrote Python scripts using Netmiko to automate backup and configuration of network devices over SSH, replacing manual CLI workflows.", techs: ["Python", "Netmiko", "SSH"], icon: "🐍", type: "personal" }
+            {
+                name: "IT Infrastructure & Networking Lab",
+                teaser: "A hands-on lab using Cisco routing and switching equipment to practise core network administration.",
+                desc: "A practical home lab built around a Cisco 1921 router and Catalyst 2960 switch. Used to practise network fundamentals, device access over SSH, switching and routing concepts, and troubleshooting. The lab is an ongoing learning environment for developing practical infrastructure and networking skills.",
+                techs: ["Cisco 1921", "Catalyst 2960", "Networking", "SSH"],
+                type: "personal",
+                image: "https://picsum.photos/seed/infrastructurelab/900/700"
+            },
+            {
+                name: "Network Health Checker",
+                teaser: "A utility project focused on checking network reachability and reporting connectivity status.",
+                desc: "A personal networking project focused on checking device or host reachability and presenting useful connectivity results. It supports practical learning around network troubleshooting and monitoring. Add implementation details and screenshots as the project develops.",
+                techs: ["Python", "Networking", "Monitoring"],
+                type: "personal",
+                image: "https://picsum.photos/seed/networkhealth/900/700"
+            },
+            {
+                name: "UserRiskMonitor",
+                teaser: "A Python security-monitoring project that reviews selected activity indicators and produces risk reports.",
+                desc: "A personal security project that scans selected files, keywords and browser-history indicators for potentially risky content, then generates a risk score and report. The project is being developed into a desktop interface using Tkinter.",
+                techs: ["Python", "Tkinter", "Security"],
+                type: "personal",
+                image: "https://picsum.photos/seed/userriskmonitor/900/700"
+            },
+            {
+                name: "e-Docket",
+                teaser: "An electronic docket concept for managing digital case records instead of paper-based files.",
+                desc: "An academic final-year project focused on an electronic docket system for creating, managing and storing digital case records. The project explores how a web-based application and database can support the organisation of case information.",
+                techs: ["Web Application", "Database", "Final Year Project"],
+                type: "academic",
+                image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=900&auto=format&fit=crop"
+            },
+            {
+                name: "Python Network Automation",
+                teaser: "Python and Netmiko experiments for connecting to network devices over SSH.",
+                desc: "A practical automation project using Python and Netmiko to connect to network devices over SSH and explore repeatable configuration and backup workflows. Developed in a lab environment as part of ongoing networking and automation learning.",
+                techs: ["Python", "Netmiko", "SSH"],
+                type: "personal",
+                image: "https://picsum.photos/seed/netautomation/900/700"
+            }
         ];
 
         const certs = [
-            { icon: "🎓", name: "BSc IT", sub: "Richfield", pending: false },
+            { icon: "🎓", name: "BSc Information Technology", sub: "Richfield Graduate Institute of Technology", pending: false },
             { icon: "📜", name: "Google IT Support", sub: "Professional Certificate", pending: false },
-            { icon: "🔒", name: "IT Security", sub: "Defense against Digital Dark Arts", pending: false },
-            { icon: "🌐", name: "Cisco Intro to Cybersecurity", sub: "", pending: false },
-            { icon: "🔌", name: "Cisco Networking Basics", sub: "", pending: false },
+            { icon: "🔒", name: "IT Security", sub: "Defense against the Digital Dark Arts", pending: false },
+            { icon: "🌐", name: "Cisco Introduction to Cybersecurity", sub: "Cisco Networking Academy", pending: false },
+            { icon: "🔌", name: "Cisco Networking Basics", sub: "Cisco Networking Academy", pending: false },
             { icon: "☁️", name: "AZ-900", sub: "Microsoft Azure Fundamentals", pending: false },
             { icon: "🛡️", name: "SC-900", sub: "Microsoft Security, Compliance & Identity Fundamentals", pending: false },
-            
+            { icon: "🔐", name: "SC-200", sub: "Microsoft Security Operations Analyst", pending: false },
+            { icon: "🛡️", name: "Fortinet Certified Associate", sub: "Cybersecurity", pending: false }
         ];
+
+        /* ============================================================
+           PROJECT RENDERING
+           ============================================================ */
+        function typeLabel(type) {
+            if (type === "professional") return "Professional";
+            if (type === "academic")     return "Academic";
+            return "Personal";
+        }
 
         function renderProjects(filter = 'all') {
             const grid = document.getElementById('projectsGrid');
-            const filtered = filter === 'all' ? projects : projects.filter(p => p.type === filter);
-            grid.innerHTML = filtered.map(p => `
-                <div class="project-card" data-type="${p.type}">
-                    <div class="project-image">${p.icon}</div>
-                    <div class="project-body">
-                        <span class="project-badge ${p.type === 'professional' ? 'badge-pro' : 'badge-personal'}">${p.type === 'professional' ? '💼 Professional' : '🚀 Personal'}</span>
-                        <h3>${p.name}</h3>
-                        <p>${p.desc}</p>
-                        <div class="tech-tags">${p.techs.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>
+            const list = filter === 'all' ? projects : projects.filter(p => p.type === filter);
+
+            if (!list.length) {
+                grid.innerHTML = `<p class="empty-note">No projects in this category yet.</p>`;
+                return;
+            }
+
+            grid.innerHTML = list.map((p, i) => `
+                <button class="project-card" type="button"
+                        style="animation-delay:${i * 60}ms"
+                        aria-label="${p.name} — open details">
+                    <div class="project-media">
+                        <img src="${p.image}" alt="" loading="lazy">
                     </div>
-                </div>
+                    <div class="project-shade"></div>
+                    <div class="project-meta">
+                        <span class="project-badge">${typeLabel(p.type)}</span>
+                        <h3>${p.name}</h3>
+                        <div class="teaser-wrap">
+                            <div>
+                                <p class="teaser">${p.teaser}</p>
+                                <span class="hint">Click to view in colour →</span>
+                            </div>
+                        </div>
+                    </div>
+                </button>
             `).join('');
+
+            grid.querySelectorAll('.project-card').forEach((el, i) => {
+                el.addEventListener('click', () => openProject(list[i], el));
+            });
         }
 
         function filterProjects(tab, btn) {
@@ -664,13 +1092,56 @@
                     <div class="cert-info">
                         ${c.name}
                         ${c.sub ? `<span class="cert-sub">${c.sub}</span>` : ''}
-                        ${c.pending ? `<span class="pending">⏳ ${c.sub}</span>` : ''}
+                        ${c.pending ? `<span class="pending">⏳ Pending</span>` : ''}
                     </div>
                 </div>
             `).join('');
         }
 
-        // Slideshow logic
+        /* ============================================================
+           PROJECT MODAL LOGIC
+           ============================================================ */
+        const pm        = document.getElementById('projectModal');
+        const pmImg     = document.getElementById('pmImg');
+        const pmTitle   = document.getElementById('pmTitle');
+        const pmType    = document.getElementById('pmType');
+        const pmTags    = document.getElementById('pmTags');
+        const pmDesc    = document.getElementById('pmDesc');
+        const pmClose   = pm.querySelector('.pm-close');
+        let pmReturnFocus = null;
+
+        function openProject(p, trigger) {
+            pmReturnFocus = trigger || document.activeElement;
+
+            pmImg.style.animation = 'none';
+            void pmImg.offsetWidth;
+            pmImg.style.animation = '';
+
+            pmImg.src = p.image;
+            pmImg.alt = p.name;
+            pmTitle.textContent = p.name;
+            pmType.textContent = typeLabel(p.type);
+            pmDesc.textContent = p.desc;
+            pmTags.innerHTML = p.techs.map(t => `<span class="tech-tag">${t}</span>`).join('');
+
+            pm.classList.add('open');
+            pm.setAttribute('aria-hidden', 'false');
+            pmClose.focus();
+        }
+
+        function closeProject() {
+            pm.classList.remove('open');
+            pm.setAttribute('aria-hidden', 'true');
+            if (pmReturnFocus && pmReturnFocus.focus) pmReturnFocus.focus();
+        }
+
+        pm.addEventListener('click', (e) => {
+            if (e.target.hasAttribute('data-close')) closeProject();
+        });
+
+        /* ============================================================
+           SLIDESHOW LOGIC
+           ============================================================ */
         const slides = document.querySelectorAll('.slide');
         const totalSlides = slides.length;
         let currentIndex = 0;
@@ -715,11 +1186,16 @@
         nextBtn.addEventListener('click', nextSlide);
 
         document.addEventListener('keydown', (e) => {
+            const modalOpen = pm.classList.contains('open');
+
+            if (e.key === 'Escape' && modalOpen) { closeProject(); return; }
+            if (modalOpen) return;
+
             if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
-            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+            if (e.key === 'ArrowLeft')  { e.preventDefault(); prevSlide(); }
         });
 
-        // Touch swipe
+        /* Touch swipe */
         let touchStartX = 0;
         const slideshow = document.getElementById('slideshow');
         slideshow.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
@@ -728,7 +1204,7 @@
             if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
         });
 
-        // Mouse wheel
+        /* Mouse wheel */
         let wheelTimeout;
         slideshow.addEventListener('wheel', (e) => {
             e.preventDefault();
@@ -738,6 +1214,7 @@
             else if (e.deltaY < -30 || e.deltaX < -30) prevSlide();
         }, { passive: false });
 
+        /* Init */
         createDots();
         renderProjects();
         renderCerts();
